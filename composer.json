@@ -1,0 +1,39 @@
+{
+  "name": "ddrv/translator",
+  "description": "Translation library",
+  "type": "library",
+  "keywords": ["translation", "internationalization", "localization", "i18n", "l10n"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ivan Dudarev",
+      "email": "ivan@ddrv.ru",
+      "homepage": "https://ddrv.ru"
+    }
+  ],
+  "require": {
+    "php": ">=7.2",
+    "ext-mbstring": "*",
+    "psr/simple-cache": "^1.0"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.5",
+    "phpunit/phpunit": "^9.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ddrv\\Translator\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Ddrv\\Tests\\Translator\\": "tests"
+    }
+  },
+  "funding": [
+    {
+      "type": "other",
+      "url": "https://www.paypal.me/ddrv"
+    }
+  ]
+}
