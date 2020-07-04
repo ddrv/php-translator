@@ -4,35 +4,40 @@ declare(strict_types=1);
 
 namespace Ddrv\Translator\Loader;
 
-use Ddrv\Translator\Contract\TranslationLoader;
+use Ddrv\Translator\Contract\DomainLoader;
 
-class MultiLoader implements TranslationLoader
+use function array_replace;
+
+final class MultiLoader implements DomainLoader
 {
 
     /**
-     * @var TranslationLoader[]
+     * @var DomainLoader[]
      */
     private $loaders;
 
-    public function __construct(TranslationLoader ...$loaders)
+    public function __construct(DomainLoader $loader)
     {
-        $this->loaders = $loaders;
+        $this->loaders[] = $loader;
     }
 
-    public function addLoader(TranslationLoader $loader): self
+    public function addLoader(DomainLoader $loader): self
     {
+        foreach ($this->loaders as $item) {
+            if ($loader === $item) {
+                return $this;
+            }
+        }
         $this->loaders[] = $loader;
         return $this;
     }
 
-    public function load(string $domain, string $locale): array
+    public function domain(string $domain, string $locale): array
     {
+        $result = [];
         foreach ($this->loaders as $loader) {
-            $data = $loader->load($domain, $locale);
-            if ($data) {
-                return $data;
-            }
+            $result = array_replace($result, $loader->domain($domain, $locale));
         }
-        return [];
+        return $result;
     }
 }

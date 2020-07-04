@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Ddrv\Tests\Translator;
 
-use Ddrv\Translator\Contract\TranslationLoader;
+use Ddrv\Translator\Contract\DomainLoader;
+use Ddrv\Translator\Contract\TranslationProvider as TranslationProviderContract;
 use Ddrv\Translator\Loader\FileLoader;
+use Ddrv\Translator\Provider\TranslationProvider;
 use Ddrv\Translator\Translator;
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +24,7 @@ class TranslatorTest extends TestCase
      */
     public function testTranslate(?string $locale, string $key, array $params, string $expected)
     {
-        $translator = new Translator('en_US', $this->getLoader());
+        $translator = new Translator('en_US', $this->getTranslationProvider());
         $this->assertSame($expected, $translator->trans($key, $params, $locale));
     }
 
@@ -68,8 +70,12 @@ class TranslatorTest extends TestCase
         ];
     }
 
+    protected function getTranslationProvider(): TranslationProviderContract
+    {
+        return new TranslationProvider($this->getDomainLoader());
+    }
 
-    private function getLoader(): TranslationLoader
+    protected function getDomainLoader(): DomainLoader
     {
         return new FileLoader(implode(DIRECTORY_SEPARATOR, [dirname(__DIR__), 'stuff', 'i18n']));
     }
