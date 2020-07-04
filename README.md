@@ -12,7 +12,7 @@ PHP library for localization application.
 
 1. Run in terminal:
     ```text
-    composer require ddrv/translator:~1.0
+    composer require ddrv/translator:^2
     ```
 
 1. Include autoload file
@@ -26,7 +26,7 @@ PHP library for localization application.
 
 ```php
 <?php
-// /path/to/translations/default/en_US.php
+# /path/to/translations/default/en_US.php
 
 return [
     'test' => 'It is test!',
@@ -43,7 +43,7 @@ return [
 
 ```php
 <?php
-// /path/to/translations/default/ru_RU.php
+# /path/to/translations/default/ru_RU.php
 
 return [
     'test' => 'Это тест!',
@@ -63,13 +63,15 @@ return [
 <?php
 
 use Ddrv\Translator\Loader\FileLoader;
+use Ddrv\Translator\Provider\TranslationProvider;
 use Ddrv\Translator\Translator;
 
 // Create a loader instance. 
 $loader = new FileLoader('/path/to/translations');
 
-/** @var Psr\SimpleCache\CacheInterface|null $cache */
-$translator = new Translator('en_US', $loader, $cache);
+$translations = new TranslationProvider($loader);
+
+$translator = new Translator('en_US', $translations);
 
 ```
 
@@ -79,6 +81,7 @@ $translator = new Translator('en_US', $loader, $cache);
 <?php
 
 use Ddrv\Translator\Translator;
+
 /** @var Translator $translator */
 $translator->trans('default:test'); // It is test!
 $translator->trans('default:multi.level.key'); // It is key in multilevel array.
@@ -95,6 +98,7 @@ $translator->trans('default:multi.level.key'); // Это ключ в много�
 <?php
 
 use Ddrv\Translator\Translator;
+
 /** @var Translator $translator */
 $translator->trans('default:hello', ['name' => 'Ivan']); // Hello, Ivan!
 $translator->trans('default:hello', ['name' => 'John']); // Hello, John!
@@ -106,6 +110,7 @@ $translator->trans('default:hello', ['name' => 'John']); // Hello, John!
 <?php
 
 use Ddrv\Translator\Translator;
+
 /** @var Translator $translator */
 $translator->trans('default:count', ['count' => 1]); // 1 element!
 $translator->trans('default:count', ['count' => 2]); // 2 elements!
@@ -114,24 +119,50 @@ $translator->trans('default:interval', ['count' => -2]); // negative
 $translator->trans('default:interval', ['count' => 2]); // positive
 ```
 
-You can develop your loader that implements the `\Ddrv\Translator\Contract\TranslationLoader` interface.
+You can develop your loader that implements the `\Ddrv\Translator\Contract\DomainLoader` interface.
 
 You can use multiple loaders at once
 
 ```php
 <?php
 
-use Ddrv\Translator\Contract\TranslationLoader;
+use Ddrv\Translator\Contract\DomainLoader;
+use Ddrv\Translator\Provider\TranslationProvider;
 use Ddrv\Translator\Loader\MultiLoader;
 use Ddrv\Translator\Translator;
 
 /**
- * @var TranslationLoader $loader1
- * @var TranslationLoader $loader2
- * @var TranslationLoader $loader3
+ * @var DomainLoader $loader1
+ * @var DomainLoader $loader2
+ * @var DomainLoader $loader3
  */
-$loader = new MultiLoader($loader1, $loader2);
+$loader = new MultiLoader($loader1);
+$loader->addLoader($loader2);
 $loader->addLoader($loader3);
 
-$translator = new Translator('en_US', $loader);
+$translations = new TranslationProvider($loader);
+
+$translator = new Translator('en_US', $translations);
+```
+
+You may wrap your loader to `\Ddrv\Translator\Loader\CachedLoader`
+
+```php
+<?php
+
+use Ddrv\Translator\Contract\DomainLoader;
+use Ddrv\Translator\Provider\TranslationProvider;
+use Ddrv\Translator\Loader\CachedLoader;
+use Ddrv\Translator\Translator;
+use Psr\SimpleCache\CacheInterface;
+
+/**
+ * @var DomainLoader $loader
+ * @var CacheInterface $cache
+ */
+$cached = new CachedLoader($loader, $cache, 'loader_1_');
+
+$translations = new TranslationProvider($cached);
+
+$translator = new Translator('en_US', $translations);
 ```
